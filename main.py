@@ -3,19 +3,32 @@ import scipy.io.wavfile as wav
 import sounddevice as sd
 from moviepy import VideoFileClip as vfc
 import synth
+import gui
 
 sample_rate: int=44100
 
 def main():
+    gui.MyGUI
+
+def play(sample_rate, sound):
+    sd.play(sound, samplerate=sample_rate)
+    sd.wait()
+
+def wav_data(src: str):
+    sample_rate, data = wav.read(src)
+    return sample_rate, data
+
+"""
+def main():
     #extract_from_mp4("Kazi & Madlib - To Be Lost.mp4")
 
-    #sample_rate, sound = wav_data("D:\\oskarsteely\\assets\\sound effects\\steely watermark\\steely.wav")
+    sample_rate, sound = wav_data("D:\\oskarsteely\\assets\\sound effects\\steely watermark\\steely.wav")
 
     #wave = sum([sine_tone(200, 2, 0.6), sine_tone(205, 2, 0.6)])
-    sound = synth.sine_tone(200, 6)
+    #sound = synth.sine_tone(200, 6)
     #sound = am_synthesis(220, sound)
     #sound = fm_synthesis(47, sound, modulation_index=3)
-    sound = synth.apply_envelope(sound, [0.5, 0.2, 0.6, 2])
+    #sound = synth.apply_envelope(sound, [0.5, 0.2, 0.6, 2])
     sd.play(sound, samplerate=sample_rate)
     sd.wait()
 
@@ -60,6 +73,6 @@ def wav_data(src: str):
     #wav.write("edited_audio.wav", sample_rate, data)
 
     return sample_rate, data
-
+"""
 if __name__ == "__main__":
     main()
