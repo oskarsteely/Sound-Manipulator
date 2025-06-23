@@ -2,21 +2,22 @@ import numpy as np
 import scipy.io.wavfile as wav
 import sounddevice as sd
 from moviepy import VideoFileClip as vfc
+import synth
 
 sample_rate: int=44100
 
 def main():
-    extract_from_mp4("Kazi & Madlib - To Be Lost.mp4")
+    #extract_from_mp4("Kazi & Madlib - To Be Lost.mp4")
 
     #sample_rate, sound = wav_data("D:\\oskarsteely\\assets\\sound effects\\steely watermark\\steely.wav")
 
     #wave = sum([sine_tone(200, 2, 0.6), sine_tone(205, 2, 0.6)])
-    #sound = sine_tone(200, 6)
+    sound = synth.sine_tone(200, 6)
     #sound = am_synthesis(220, sound)
     #sound = fm_synthesis(47, sound, modulation_index=3)
-    #sound = apply_envelope(sound, [0.5, 0.2, 0.6, 2])
-    #sd.play(sound, samplerate=sample_rate)
-    #sd.wait()
+    sound = synth.apply_envelope(sound, [0.5, 0.2, 0.6, 2])
+    sd.play(sound, samplerate=sample_rate)
+    sd.wait()
 
 def extract_from_mp4(src: str):
     clip = vfc(src)
