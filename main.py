@@ -1,7 +1,7 @@
-import numpy as np
-import scipy.io.wavfile as wav
+#import numpy as np
+#import scipy.io.wavfile as wav
 import sounddevice as sd
-from moviepy import VideoFileClip as vfc
+#from moviepy import VideoFileClip as vfc
 import synth
 import gui
 
