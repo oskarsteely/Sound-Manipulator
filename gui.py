@@ -1,27 +1,44 @@
 import tkinter as tk
-import main as main
+from tkinter import filedialog as fd
 import sounddevice as sd
+import scipy.io.wavfile as wav
 
-class MyGUI:
+class MainWINDOW:
 
     def __init__(self):
+        self.filename = ""
 
         self.root = tk.Tk()
-        self.root.geometry("500x500")
+        self.root.geometry("800x600")
+        self.root.resizable(False, False)
 
-        self.playButton = tk.Button(self.root, text="Play Audio", font=('Arial', 18), command=self.play)
+        self.openButton = tk.Button(self.root, text="Open audio file", font=('Arial', 18), command=self.openFile)
+        self.openButton.pack(padx=10, pady=10)
+
+        self.filenameLabel = tk.Label(self.root, text="choose file", font=('Arial', 14))
+        self.filenameLabel.pack(padx=10, pady=10)
+
+        self.playButton = tk.Button(self.root, text="Play audio", font=('Arial', 18), command=self.play)
         self.playButton.pack(padx=10, pady=10)
 
-        self.stopButton = tk.Button(self.root, text="Stop Audio", font=('Arial', 18), command=sd.stop)
+        self.stopButton = tk.Button(self.root, text="Stop audio", font=('Arial', 18), command=sd.stop)
         self.stopButton.pack(padx=10, pady=10)
 
         self.root.mainloop()
 
-    def play(self):
-        sample_rate, sound = main.wav_data("Kazi & Madlib - To Be Lost.wav")
-        main.play(sample_rate, sound)
+    def openFile(self):
+        filetypes = (('audio files', '*.wav'), ('All files', '*.*'))
+        self.filename = fd.askopenfilename(title = 'Open an audio file', initialdir='/', filetypes=filetypes)
+        print(self.filename)
 
-MyGUI()
+    def play(self):
+        if not self.filename:
+            tk.messagebox.showwarning(title="Warning", message="Choose file first!")
+        else:
+            sample_rate, sound = wav.read(self.filename)
+            sd.play(sound, samplerate=sample_rate)
+
+MainWINDOW()
 
 """
 def main():

@@ -8,15 +8,7 @@ import gui
 sample_rate: int=44100
 
 def main():
-    gui.MyGUI
-
-def play(sample_rate, sound):
-    sd.play(sound, samplerate=sample_rate)
-    sd.wait()
-
-def wav_data(src: str):
-    sample_rate, data = wav.read(src)
-    return sample_rate, data
+    gui.MainWINDOW
 
 """
 def main():
