@@ -9,19 +9,19 @@ class MainWINDOW:
         self.filename = ""
 
         self.root = tk.Tk()
-        self.root.geometry("800x600")
+        self.root.geometry("400x300")
         self.root.resizable(False, False)
 
         self.openButton = tk.Button(self.root, text="Open audio file", font=('Arial', 18), command=self.openFile)
         self.openButton.pack(padx=10, pady=10)
 
-        self.filenameLabel = tk.Label(self.root, text="choose file", font=('Arial', 14))
+        self.filenameLabel = tk.Label(self.root, text=self.filenameText, font=('Arial', 14))
         self.filenameLabel.pack(padx=10, pady=10)
 
         self.playButton = tk.Button(self.root, text="Play audio", font=('Arial', 18), command=self.play)
         self.playButton.pack(padx=10, pady=10)
 
-        self.stopButton = tk.Button(self.root, text="Stop audio", font=('Arial', 18), command=sd.stop)
+        self.stopButton = tk.Button(self.root, text="Stop audio", font=('Arial', 18), command=self.stop)
         self.stopButton.pack(padx=10, pady=10)
 
         self.root.mainloop()
@@ -31,12 +31,21 @@ class MainWINDOW:
         self.filename = fd.askopenfilename(title = 'Open an audio file', initialdir='/', filetypes=filetypes)
         print(self.filename)
 
+    def filenameText(self):
+        if not self.filename:
+            return "choose file"
+        else:
+            return self.filename
+
     def play(self):
         if not self.filename:
             tk.messagebox.showwarning(title="Warning", message="Choose file first!")
         else:
             sample_rate, sound = wav.read(self.filename)
             sd.play(sound, samplerate=sample_rate)
+
+    def stop(self):
+        sd.stop()
 
 MainWINDOW()
 
