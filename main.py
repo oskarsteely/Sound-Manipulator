@@ -1,8 +1,8 @@
 #import numpy as np
 #import scipy.io.wavfile as wav
-import sounddevice as sd
+#import sounddevice as sd
 #from moviepy import VideoFileClip as vfc
-import synth
+#import synth
 import gui
 
 sample_rate: int=44100

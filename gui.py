@@ -1,84 +1,109 @@
 import tkinter as tk
 from tkinter import filedialog as fd
+import os
 import sounddevice as sd
-import scipy.io.wavfile as wav
+import soundfile as sf
+import numpy as np
+import time
 
-class MainWINDOW:
+class App:
 
     def __init__(self):
-        self.filename = ""
+        self.file_path = None
+        self.blocksize = 1024
 
         self.root = tk.Tk()
-        self.root.geometry("400x300")
+        self.root.geometry("800x300")
         self.root.resizable(False, False)
+        self.root.title("Sound App")
 
-        self.openButton = tk.Button(self.root, text="Open audio file", font=('Arial', 18), command=self.openFile)
-        self.openButton.pack(padx=10, pady=10)
+        self.openButton = tk.Button(self.root, text="Open audio file", command=self.openFile)
+        self.openButton.pack(pady=10)
 
-        self.filenameLabel = tk.Label(self.root, text=self.filenameText, font=('Arial', 14))
-        self.filenameLabel.pack(padx=10, pady=10)
+        self.fileLabel = tk.Label(self.root, text="Nothing to play")
+        self.fileLabel.pack(pady=1)
 
-        self.playButton = tk.Button(self.root, text="Play audio", font=('Arial', 18), command=self.play)
-        self.playButton.pack(padx=10, pady=10)
+        self.elapsedLabel = tk.Label(self.root, text="00:00")
+        self.elapsedLabel.pack(pady=1)
 
-        self.stopButton = tk.Button(self.root, text="Stop audio", font=('Arial', 18), command=self.stop)
-        self.stopButton.pack(padx=10, pady=10)
+        self.playButton = tk.Button(self.root, text="Play audio", command=self.play)
+        self.playButton.pack(pady=10)
+
+        self.pauseButton = tk.Button(self.root, text="Pause audio", command=self.pause)
+        self.pauseButton.pack(pady=1)
+
+        self.stopButton = tk.Button(self.root, text="Stop audio", command=self.stop)
+        self.stopButton.pack(pady=10)
 
         self.root.mainloop()
 
     def openFile(self):
-        filetypes = (('audio files', '*.wav'), ('All files', '*.*'))
-        self.filename = fd.askopenfilename(title = 'Open an audio file', initialdir='/', filetypes=filetypes)
-        print(self.filename)
+        self.file_path = fd.askopenfilename(title = 'Open an audio file', filetypes=[("WAV files", "*.wav")])
 
-    def filenameText(self):
-        if not self.filename:
-            return "choose file"
-        else:
-            return self.filename
+        if not self.file_path:
+            return
+
+        self.file = os.path.basename(self.file_path)
+        self.fileLabel.config(text="Now playing: " + self.file)
+
+        self.sample, self.sample_rate = sf.read(self.file_path, dtype='float32')
+        self.current_sample = 0
+
+        self.stream = sd.OutputStream(
+            samplerate=self.sample_rate,
+            channels=self.sample.shape[1] if self.sample.ndim > 1 else 1,
+            callback=self.callback,
+            blocksize=self.blocksize
+        )
+        self.stream.start()
+
+        tk.messagebox.showinfo("Loaded", f"Loaded: {self.file}")
+
+    def callback(self, outdata, frames, time_info, status):
+        if not self.file_path:
+            outdata.fill(0)
+            return
+
+        end_sample = self.current_sample + frames
+        if end_sample >= len(self.sample):
+            remaining = len(self.sample) - self.current_sample
+            outdata[:remaining] = self.sample[self.current_sample:]
+            outdata[remaining:] = 0
+            return
+
+        chunk = self.audio_data[self.current_sample:end_sample]
+        outdata[:len(chunk)] = chunk
+        self.current_sample += frames
 
     def play(self):
-        if not self.filename:
+        if not self.file_path:
             tk.messagebox.showwarning(title="Warning", message="Choose file first!")
-        else:
-            sample_rate, sound = wav.read(self.filename)
-            sd.play(sound, samplerate=sample_rate)
+            return
+
+
+
+        self.playing = True
+        self.elapsing()
+
+    def pause(self):
+        self.playing = False
+
+        sd.stop()
 
     def stop(self):
         sd.stop()
+        self.playing = False
+        self.elapsedLabel.config(text="00:00")
+        self.elapsed = 0
 
-MainWINDOW()
+    def elapsing(self):
+        if not self.sample_playing:
+            return
+        self.elapsed = int(time.time() - self.start)
+        self.elapsed_samples = int(self.elapsed * self.sample_rate)
+        minutes = self.elapsed // 60
+        seconds = self.elapsed % 60
+        self.elapsedLabel.config(text=f"{minutes:02d}:{seconds:02d}")
+        self.root.after(500, self.elapsing)
 
-"""
-def main():
-    root = tk.Tk()
-
-    root.geometry("800x500")
-    root.title("Sound Manipulator")
-
-    optionsframe = tk.Frame(root)
-    optionsframe.columnconfigure(0, weight=1)
-    optionsframe.columnconfigure(1, weight=1)
-
-    filechbtn = tk.Checkbutton(optionsframe, text = "Audio file", font=(18))
-    filechbtn.grid(row = 0, column = 0, sticky = tk.W+tk.E)
-
-    fileentry = tk.Entry(optionsframe)
-    fileentry.grid(row = 0, column = 1, sticky = tk.W+tk.E)
-
-    attackchbtn = tk.Checkbutton(optionsframe, text = "Attack", font=(18))
-    attackchbtn.grid(row = 1, column = 0, sticky = tk.W+tk.E)
-
-    attackentry = tk.Entry(optionsframe)
-    attackentry.grid(row = 1, column = 1, sticky = tk.W+tk.E)
-
-    optionsframe.pack()
-
-    playbtn = tk.Button(root, text="play", height = 2, width = 7, font=(18))
-    playbtn.pack(padx = 10, pady = 10)
-
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()
-"""
+App()
